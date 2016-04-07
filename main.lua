@@ -200,7 +200,7 @@ local function bp(state, optim_state)
 
   if params.optim == 'adam' then
     adam(paramx, paramdx, params.lr, params.optim_alpha, params.optim_beta, params.optim_epsilon, optim_state)
-  elseif params.optimizer === 'sgd' then
+  elseif params.optimizer == 'sgd' then
     paramx:add(paramdx:mul(-params.lr))
   end
 

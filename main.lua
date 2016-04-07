@@ -18,7 +18,7 @@ local optim = require 'optim'
 require 'optim_updates'
 
 
-params = require 'opts.opt'
+params = require 'opts.opts'
 
 local logger_trn = 
   optim.Logger(paths.concat(params.checkpoint_path, 'train.log'))

@@ -24,14 +24,14 @@ local params = {
 }
 
 local checkpoint_path = string.format(
-  'PTB_word_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d',
+  'PTB_word_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_%s_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d',
   params.batch_size, params.seq_length, 
   params.bn_rnn, params.layers, params.rnn_size, params.dropout, 
   params.init_weight, params.init_gamma,
-  params.lr, params.max_epoch, params.decay, params.max_grad_norm)
+  params.optim, params.lr, params.max_epoch, params.decay, params.max_grad_norm)
 params.checkpoint_path = checkpoint_path
 
-print(string.format('
-  checkpoint_path: %s', params.checkpoint_path))
+print(string.format(
+  'checkpoint_path: %s', params.checkpoint_path))
 
 return params

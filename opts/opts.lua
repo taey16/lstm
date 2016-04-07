@@ -16,7 +16,11 @@ local params = {
   max_epoch=14,
   max_max_epoch=55,
   max_grad_norm=10,
-  bn_rnn = 'bn'
+  bn_rnn = 'bn',
+  optim = 'adam',
+  optim_alpha = 0.9,
+  optim_beta = 0.999,
+  optim_epsilon = 1e-8,
 }
 
 local checkpoint_path = string.format(

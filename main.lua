@@ -15,6 +15,7 @@ require('base')
 local ptb = require 'data'
 local init_utils = require 'init_model_weight' 
 local optim = require 'optim'
+require 'optim_updates'
 
 
 params = require 'opts.opt'
@@ -176,7 +177,7 @@ local function fp(state)
   return model.err:mean()
 end
 
-local function bp(state)
+local function bp(state, optim_state)
   paramdx:zero()
   reset_ds()
   for i = params.seq_length, 1, -1 do
@@ -196,7 +197,14 @@ local function bp(state)
     local shrink_factor = params.max_grad_norm / model.norm_dw
     paramdx:mul(shrink_factor)
   end
-  paramx:add(paramdx:mul(-params.lr))
+
+  if params.optim == 'adam' then
+    adam(paramx, paramdx, params.lr, params.optim_alpha, params.optim_beta, params.optim_epsilon, optim_state)
+  elseif params.optimizer === 'sgd' then
+    paramx:add(paramdx:mul(-params.lr))
+  end
+
+  return optim_state
 end
 
 local function run_valid()
@@ -251,6 +259,7 @@ local function main()
   local words_per_step = params.seq_length * params.batch_size
   local epoch_size = torch.floor(state_train.data:size(1) / params.seq_length)
   local perps
+  local optim_state = {}
   while epoch < params.max_max_epoch do
     model.core_network:training()
     local perp = fp(state_train)
@@ -259,7 +268,7 @@ local function main()
     end
     perps[step % epoch_size + 1] = perp
     step = step + 1
-    bp(state_train)
+    optim_state = bp(state_train, optim_state)
     total_cases = total_cases + params.seq_length * params.batch_size
     epoch = step / epoch_size
     if step % torch.round(epoch_size / 10) == 10 then

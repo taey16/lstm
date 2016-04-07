@@ -189,19 +189,19 @@ local function bp(state, optim_state)
     cutorch.synchronize()
   end
   state.pos = state.pos + params.seq_length
-  paramdx:clamp(-params.grad_clip, params.grad_clip)
   model.norm_dw = paramdx:norm()
-  --[[
   if model.norm_dw > params.max_grad_norm then
     local shrink_factor = params.max_grad_norm / model.norm_dw
     paramdx:mul(shrink_factor)
   end
-  --]]
+  paramdx:clamp(-params.grad_clip, params.grad_clip)
 
   if params.optim == 'adam' then
     adam(paramx, paramdx, params.lr, params.optim_alpha, params.optim_beta, params.optim_epsilon, optim_state)
-  elseif params.optimizer == 'sgd' then
+  elseif params.optim == 'sgd' then
     paramx:add(paramdx:mul(-params.lr))
+  else
+    error(string.format('ERROR check params.optim: %s', params.optim))
   end
 
   return optim_state

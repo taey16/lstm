@@ -194,7 +194,7 @@ local function bp(state, optim_state)
     local shrink_factor = params.max_grad_norm / model.norm_dw
     paramdx:mul(shrink_factor)
   end
-  paramdx:clamp(-params.grad_clip, params.grad_clip)
+  --paramdx:clamp(-params.grad_clip, params.grad_clip)
 
   if params.optim == 'adam' then
     adam(paramx, paramdx, params.lr, params.optim_alpha, params.optim_beta, params.optim_epsilon, optim_state)

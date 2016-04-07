@@ -12,35 +12,12 @@ require 'cudnn'
 require 'cutorch'
 require('nngraph')
 require('base')
-local ptb = require('data')
+local ptb = require 'data'
 local init_utils = require 'init_model_weight' 
 local optim = require 'optim'
 
 
--- Train 1 day and gives 82 perplexity.
-params = {batch_size=20,
-          seq_length=35,
-          vocab_size=10000,
-          layers=3,
-          rnn_size=1500,
-          dropout=0.65,
-          init_weight=0.04,
-          init_gamma = 0.1,
-          lr=1,
-          decay=1.15,
-          max_epoch=14,
-          max_max_epoch=55,
-          max_grad_norm=10,
-          bn_rnn = 'bn'}
-
-local checkpoint_path = string.format(
-  'PTB_word_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d',
-  params.batch_size, params.seq_length, 
-  params.bn_rnn, params.layers, params.rnn_size, params.dropout, 
-  params.init_weight, params.init_gamma,
-  params.lr, params.max_epoch, params.decay, params.max_grad_norm)
-params.checkpoint_path = checkpoint_path
-
+params = require 'opts.opt'
 
 local logger_trn = 
   optim.Logger(paths.concat(params.checkpoint_path, 'train.log'))

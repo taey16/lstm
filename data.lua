@@ -44,7 +44,12 @@ local function load_data(fname)
 end
 
 local function traindataset(batch_size)
-   local x = load_data(ptb_path .. "ptb.train.txt")
+   local x
+   if params.dataset == 'char_ptb' then
+     x = load_data(ptb_path .. "ptb.char.train.txt")
+   elseif params.dataset == 'word_ptb' then
+     x = load_data(ptb_path .. "ptb.train.txt")
+   end
    x = replicate(x, batch_size)
    return x
 end
@@ -52,13 +57,25 @@ end
 -- Intentionally we repeat dimensions without offseting.
 -- Pass over this batch corresponds to the fully sequential processing.
 local function testdataset(batch_size)
-   local x = load_data(ptb_path .. "ptb.test.txt")
+   --local x = load_data(ptb_path .. "ptb.test.txt")
+   local x
+   if params.dataset == 'char_ptb' then
+     x = load_data(ptb_path .. "ptb.char.test.txt")
+   elseif params.dataset == 'word_ptb' then
+     x = load_data(ptb_path .. "ptb.test.txt")
+   end
    x = x:resize(x:size(1), 1):expand(x:size(1), batch_size)
    return x
 end
 
 local function validdataset(batch_size)
-   local x = load_data(ptb_path .. "ptb.valid.txt")
+   --local x = load_data(ptb_path .. "ptb.valid.txt")
+   local x
+   if params.dataset == 'char_ptb' then
+     x = load_data(ptb_path .. "ptb.char.valid.txt")
+   elseif params.dataset == 'word_ptb' then
+     x = load_data(ptb_path .. "ptb.valid.txt")
+   end
    x = replicate(x, batch_size)
    return x
 end

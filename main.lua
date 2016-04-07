@@ -12,14 +12,11 @@ require 'cudnn'
 require 'cutorch'
 require('nngraph')
 require('base')
-local ptb = require 'data'
 local init_utils = require 'init_model_weight' 
-local optim = require 'optim'
 require 'optim_updates'
-
-
 params = require 'opts.opts'
-
+local ptb = require 'data'
+local optim = require 'optim'
 local logger_trn = 
   optim.Logger(paths.concat(params.checkpoint_path, 'train.log'))
 local logger_tst = 

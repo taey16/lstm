@@ -189,7 +189,7 @@ local function bp(state, optim_state)
     cutorch.synchronize()
   end
   state.pos = state.pos + params.seq_length
-  paramdx:clamp(-opt.grad_clip, opt.grad_clip)
+  paramdx:clamp(-params.grad_clip, params.grad_clip)
   model.norm_dw = paramdx:norm()
   --[[
   if model.norm_dw > params.max_grad_norm then

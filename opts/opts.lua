@@ -3,7 +3,7 @@ require 'paths'
 
 -- Train 1 day and gives 82 perplexity.
 local params = {
-  dataset='char_ptb',
+  dataset='word_ptb',
   batch_size=20,
   seq_length=35,
   vocab_size=10000,
@@ -12,14 +12,14 @@ local params = {
   dropout=0.65,
   init_weight=0.04,
   init_gamma = 0.1,
-  lr=0.1,
+  lr=1.0,
   decay=1.15,
   max_epoch=14,
   max_max_epoch=55,
   max_grad_norm=10,
   grad_clip = 0.1,
   bn_rnn = 'bn',
-  optim = 'adam',
+  optim = 'sgd',
   optim_alpha = 0.9,
   optim_beta = 0.999,
   optim_epsilon = 1e-8,

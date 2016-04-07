@@ -31,7 +31,7 @@ params = {batch_size=20,
           max_epoch=14,
           max_max_epoch=55,
           max_grad_norm=10,
-          bn_rnn = 'original'}
+          bn_rnn = 'bn'}
 
 local checkpoint_path = string.format(
   'PTB_word_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d',

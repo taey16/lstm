@@ -5,14 +5,14 @@ require 'paths'
 local params = {
   dataset='word_ptb',
   batch_size=20,
-  seq_length=35,
+  seq_length=96,--35,
   vocab_size=10000,
   layers=2,
   rnn_size=1500,
-  dropout=0.65,
+  dropout=0.0,
   init_weight=0.04,
   init_gamma = 0.1,
-  lr=1.0,
+  lr=0.1,
   decay=1.15,
   max_epoch=14,
   max_max_epoch=55,
@@ -26,7 +26,7 @@ local params = {
 }
 
 local checkpoint_path = string.format(
-  '/storage/ptb/%s_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_%s_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d_clip%f',
+  '/storage/ptb/dev_%s_bs%03d_seq_len%03d_%s_lstm_lay%02d_hid%d_drop%f_init_weight%f_init_gamma%f_%s_lr%f_decay_every%d_seed%f_vocab10000_max_gradNorm%d_clip%f',
   params.dataset,
   params.batch_size, params.seq_length, 
   params.bn_rnn, params.layers, params.rnn_size, params.dropout, 

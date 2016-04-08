@@ -190,12 +190,14 @@ local function bp(state, optim_state)
   end
   state.pos = state.pos + params.seq_length
   model.norm_dw = paramdx:norm()
-  if model.norm_dw > params.max_grad_norm then
+  if params.max_grad_norm > -1 and model.norm_dw > params.max_grad_norm then
     local shrink_factor = params.max_grad_norm / model.norm_dw
     paramdx:mul(shrink_factor)
   end
   -- clip grad.
-  --paramdx:clamp(-params.grad_clip, params.grad_clip)
+  if params.grad_clip > -1 then
+    paramdx:clamp(-params.grad_clip, params.grad_clip)
+  end
 
   if params.optim == 'adam' then
     adam(paramx, paramdx, params.lr, params.optim_alpha, params.optim_beta, params.optim_epsilon, optim_state)

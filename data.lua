@@ -40,6 +40,8 @@ local function load_data(fname)
       end
       x[i] = vocab_map[data[i]]
    end
+   print(string.format(
+     "Loading %s, size of hist.(vocab_size)  = %d", fname, x:max()))
    return x
 end
 

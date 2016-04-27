@@ -57,8 +57,36 @@ local function lstm(x, prev_c, prev_h)
   return next_c, next_h
 end
 
-
 local function bn_lstm(x, prev_c, prev_h)
+  local bn_wx = cudnn.BatchNormalization(4 * params.rnn_size, 1e-5, 0.1, true)
+  local bn_wh = cudnn.BatchNormalization(4 * params.rnn_size, 1e-5, 0.1, true)
+  local bn_c  = cudnn.BatchNormalization(    params.rnn_size, 1e-5, 0.1, true)
+
+  local i2h = bn_wx(nn.Linear(params.rnn_size, 4 * params.rnn_size)(x):annotate { name = 'i2h_' .. L }):annotate { name = 'bn_wx_' .. L }
+  local h2h = bn_wh(nn.Linear(params.rnn_size, 4 * rnn_size, false)(prev_h):annotate { name = 'h2h_' .. L }):annotate { name = 'bn_wh_' .. L }
+  local all_input_sums = nn.CAddTable()({ i2h, h2h })
+
+  local reshaped = nn.Reshape(4, rnn_size)(all_input_sums)
+  local n1, n2, n3, n4 = nn.SplitTable(2)(reshaped):split(4)
+  -- decode the gates
+  local in_gate = nn.Sigmoid()(n1)
+  local forget_gate = nn.Sigmoid()(n2)
+  local out_gate = nn.Sigmoid()(n3)
+  -- decode the write inputs
+  local in_transform = nn.Tanh()(n4)
+  -- perform the LSTM update
+  local next_c = nn.CAddTable()({
+    nn.CMulTable()({ forget_gate, prev_c }),
+    nn.CMulTable()({ in_gate, in_transform })
+  })
+  -- gated cells form the output
+  local next_h = nn.CMulTable()({ out_gate, nn.Tanh()(bn_c(next_c):annotate { name = 'bn_c_' .. L }) })
+
+  return next_c, next_h
+end
+
+
+local function my_bn_lstm(x, prev_c, prev_h)
   -- Calculate all four gates in one go
   local i2h = nn.Linear(params.rnn_size, 4*params.rnn_size, false)(x)
   local h2h = nn.Linear(params.rnn_size, 4*params.rnn_size, false)(prev_h)

@@ -57,30 +57,29 @@ local function lstm(x, prev_c, prev_h)
   return next_c, next_h
 end
 
-local function bn_lstm(x, prev_c, prev_h)
+local function bn_lstm(x, prev_c, prev_h, layer_idx)
   local bn_wx = cudnn.BatchNormalization(4 * params.rnn_size, 1e-5, 0.1, true)
   local bn_wh = cudnn.BatchNormalization(4 * params.rnn_size, 1e-5, 0.1, true)
   local bn_c  = cudnn.BatchNormalization(    params.rnn_size, 1e-5, 0.1, true)
 
-  local i2h = bn_wx(nn.Linear(params.rnn_size, 4 * params.rnn_size)(x):annotate { name = 'i2h_' .. L }):annotate { name = 'bn_wx_' .. L }
-  local h2h = bn_wh(nn.Linear(params.rnn_size, 4 * rnn_size, false)(prev_h):annotate { name = 'h2h_' .. L }):annotate { name = 'bn_wh_' .. L }
+  local i2h = bn_wx(nn.Linear(params.rnn_size, 4 * params.rnn_size)(x):annotate { name = 'i2h_' .. layer_idx }):annotate { name = 'bn_wx_' .. layer_idx }
+  local h2h = bn_wh(nn.Linear(params.rnn_size, 4 * params.rnn_size, false)(prev_h):annotate { name = 'h2h_' .. layer_idx }):annotate { name = 'bn_wh_' .. layer_idx }
   local all_input_sums = nn.CAddTable()({ i2h, h2h })
 
-  local reshaped = nn.Reshape(4, rnn_size)(all_input_sums)
-  local n1, n2, n3, n4 = nn.SplitTable(2)(reshaped):split(4)
-  -- decode the gates
-  local in_gate = nn.Sigmoid()(n1)
-  local forget_gate = nn.Sigmoid()(n2)
-  local out_gate = nn.Sigmoid()(n3)
-  -- decode the write inputs
-  local in_transform = nn.Tanh()(n4)
-  -- perform the LSTM update
+  local reshaped_gates = nn.Reshape(4, params.rnn_size)(all_input_sums)
+  local sliced_gates = nn.SplitTable(2)(reshaped_gates)
+
+  local in_gate          = nn.Sigmoid()(nn.SelectTable(1)(sliced_gates))
+  local in_transform     = nn.Tanh()(nn.SelectTable(2)(sliced_gates))
+  local forget_gate      = nn.Sigmoid()(nn.SelectTable(3)(sliced_gates))
+  local out_gate         = nn.Sigmoid()(nn.SelectTable(4)(sliced_gates))
+
   local next_c = nn.CAddTable()({
     nn.CMulTable()({ forget_gate, prev_c }),
     nn.CMulTable()({ in_gate, in_transform })
   })
   -- gated cells form the output
-  local next_h = nn.CMulTable()({ out_gate, nn.Tanh()(bn_c(next_c):annotate { name = 'bn_c_' .. L }) })
+  local next_h = nn.CMulTable()({ out_gate, nn.Tanh()(bn_c(next_c):annotate { name = 'bn_c_' .. layer_idx }) })
 
   return next_c, next_h
 end
@@ -129,7 +128,7 @@ local function create_network()
     local dropped        = nn.Dropout(params.dropout)(i[layer_idx - 1])
     local next_c, next_h
     if params.bn_rnn == 'bn' then
-      next_c, next_h = bn_lstm(dropped, prev_c, prev_h)
+      next_c, next_h = bn_lstm(dropped, prev_c, prev_h, layer_idx)
     else
       next_c, next_h = lstm(dropped, prev_c, prev_h)
     end
